@@ -20,16 +20,16 @@
 #include <esp_log.h>
 #include <esp_lcd_touch_xpt2046.h>
 #include <microui.h>
-#include "esp_lcd_touch.h"
+#include <esp_lcd_touch.h>
+
 #include "config.h"
+#include "render.h"
 
 #define TAG "TOUCH"
 
-extern esp_lcd_touch_handle_t tp;
+esp_lcd_touch_handle_t tp;
 
-extern esp_lcd_panel_io_handle_t tp_io_handle;
-
-extern mu_Context muCtx;
+esp_lcd_panel_io_handle_t tp_io_handle;
 
 void
 init_touch()
@@ -64,18 +64,42 @@ touch_read(bool *last_touch_state)
 
     /* Update touch point data. */
     esp_lcd_touch_read_data(tp);
-    bool pressed      = esp_lcd_touch_get_data(tp, &touchData, &count, 1);
-    muCtx.mouse_pos   = (mu_Vec2) { touchData.x, touchData.y };
-    muCtx.mouse_delta = (mu_Vec2) { touchData.x - muCtx.last_mouse_pos.x,
-                                    touchData.y - muCtx.last_mouse_pos.y };
+    bool pressed = esp_lcd_touch_get_data(tp, &touchData, &count, 1);
+    if (pressed)
+    {
+        /* If we were already touching last frame, this is a drag operation */
+        if (*last_touch_state)
+        {
+            /* Calculate how far the finger moved since the last frame */
+            int delta_x = touchData.x - muCtx.mouse_pos.x;
+            int delta_y = touchData.y - muCtx.mouse_pos.y;
 
-    /* 'mouse_down' is high while touching */
-    muCtx.mouse_down = pressed ? MU_MOUSE_LEFT : 0;
+            /* Apply a deadzone so tiny finger shakes don't trigger scrolling */
+            if (abs(delta_y) > 2 || abs(delta_x) > 2)
+            {
+                /* Multiplying by a factor changes scrolling speed */
+                mu_input_scroll(&muCtx, delta_x * 2, delta_y * 2);
+            }
+            mu_input_mousemove(&muCtx, touchData.x, touchData.y);
 
-    /* 'mouse_pressed' is high ONLY on the transition from 0 -> 1 */
-    muCtx.mouse_pressed = (pressed && !(*last_touch_state)) ? MU_MOUSE_LEFT : 0;
-
-    /* Save state for next frame */
-    muCtx.last_mouse_pos = muCtx.mouse_pos;
-    *last_touch_state    = pressed;
+            /* Transitioning from unpressed to pressed so a click event*/
+            if (!(*last_touch_state))
+            {
+                mu_input_mousedown(
+                    &muCtx, touchData.x, touchData.y, MU_MOUSE_LEFT);
+            }
+        }
+        else
+        {
+            /* Transitioning from pressed to unpressed so a release event */
+            if (*last_touch_state)
+            {
+                mu_input_mouseup(&muCtx,
+                                 muCtx.mouse_pos.x,
+                                 muCtx.mouse_pos.y,
+                                 MU_MOUSE_LEFT);
+            }
+        }
+        *last_touch_state = pressed;
+    }
 }

@@ -17,8 +17,46 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stdint.h>
 #include <microui.h>
-#include <hagl.h>
+
+typedef enum
+{
+    MUTED_PLUM       = 0x59AB,
+    WARM_CREAM       = 0xFFBD,
+    SAGE_GREEN       = 0x436A,
+    ALABASTER_GRAY   = 0xE71A,
+    CASHMERE_GRAY    = 0xB574,
+    CHARCOAL_BG      = 0x2945,
+    TERRACOTTA       = 0xDB65,
+    FOREST_GREEN     = 0x3468,
+    ESPRESSO_BLACK   = 0x10A2,
+    MILKY_WHITE      = 0xF79D,
+    TAUPE_GRAY       = 0x7B8D,
+    SLATE_BLUE       = 0x2AB0,
+    BRICK_RED        = 0xC1A5
+} color_t;
+
+
+typedef enum
+{
+    IN_SUB_MENU,
+    FEATURE_RUN,
+    IN_MAIN_MENU,
+    STOP_FEATURE
+} ui_states_t;
+
+typedef enum
+{
+    DARK,
+    LIGHT
+} theme_state_t;
+
+extern theme_state_t   globalThemeState;
+extern ui_states_t     globalUIState;
+extern mu_Context muCtx;
+
+void apply_theme();
 
 void init_ui();
 

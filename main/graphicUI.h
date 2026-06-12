@@ -18,3 +18,5 @@
  */
 
 void ui_loop(void *pvParameters);
+
+void build_user_interface();

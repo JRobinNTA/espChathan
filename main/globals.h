@@ -19,18 +19,18 @@
 
 #include <esp_lcd_touch_xpt2046.h>
 #include <microui.h>
-#include "esp_lcd_touch.h"
-#include "hagl/backend.h"
+#include <esp_lcd_touch.h>
+#include <hagl/backend.h>
 #include <hagl_hal.h>
 
-esp_lcd_touch_handle_t tp;
+extern esp_lcd_touch_handle_t tp;
 
-esp_lcd_panel_io_handle_t tp_io_handle;
+extern esp_lcd_panel_io_handle_t tp_io_handle;
 
-mu_Context muCtx;
+extern mu_Context muCtx;
 
-hagl_backend_t *display;
+extern hagl_backend_t *display;
 
-hagl_bitmap_t *nextIcon;
+extern hagl_bitmap_t *nextIcon;
 
-SemaphoreHandle_t spi_bus_mutex = NULL;
+extern SemaphoreHandle_t spi_bus_mutex;

@@ -21,13 +21,14 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 
-#include "lcDsply.h"
+#include "render.h"
 #include "touchScrn.h"
 #include "graphicUI.h"
+#include "globals.h"
 
 #define TAG "MAIN"
 
-extern SemaphoreHandle_t spi_bus_mutex;
+SemaphoreHandle_t spi_bus_mutex = NULL;
 
 void
 app_main(void)

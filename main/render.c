@@ -29,16 +29,24 @@
 #include "globals.h"
 #include "config.h"
 #include "icons.h"
+#include "render.h"
 
 #define TAG "UI"
 
-extern hagl_backend_t *display;
+hagl_backend_t *display;
 
-extern mu_Context muCtx;
+mu_Context muCtx;
+
+/* Set default theme to dark */
+theme_state_t globalThemeState = DARK;
 
 int
 get_text_width(mu_Font font, const char *str, int len)
 {
+    if (len < 0)
+    {
+        len = strlen(str);
+    }
     return len * FONT_WIDTH;
 }
 
@@ -54,23 +62,86 @@ get_draw_frame(mu_Context *ctx, mu_Rect rect, int colorid)
     mu_Color     c   = ctx->style->colors[colorid];
     hagl_color_t col = hagl_color(display, c.r, c.g, c.b);
     hagl_fill_rectangle(
-        display, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, col);
+        display, rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, col);
+}
+
+static mu_Color
+color_to_mu(uint16_t rgb565)
+{
+    return (mu_Color) { .r = ((rgb565 >> 11) & 0x1F) << 3,
+                        .g = ((rgb565 >> 5) & 0x3F) << 2,
+                        .b = (rgb565 & 0x1F) << 3,
+                        .a = 255 };
+}
+
+void
+apply_theme()
+{
+    if (globalThemeState == DARK)
+    {
+        muCtx.style->colors[MU_COLOR_TEXT]        = color_to_mu(MILKY_WHITE);
+        muCtx.style->colors[MU_COLOR_BORDER]      = color_to_mu(TAUPE_GRAY);
+        muCtx.style->colors[MU_COLOR_WINDOWBG]    = color_to_mu(ESPRESSO_BLACK);
+        muCtx.style->colors[MU_COLOR_TITLEBG]     = color_to_mu(CHARCOAL_BG);
+        muCtx.style->colors[MU_COLOR_TITLETEXT]   = color_to_mu(MILKY_WHITE);
+        muCtx.style->colors[MU_COLOR_PANELBG]     = color_to_mu(CHARCOAL_BG);
+        muCtx.style->colors[MU_COLOR_BUTTON]      = color_to_mu(CHARCOAL_BG);
+        muCtx.style->colors[MU_COLOR_BUTTONHOVER] = color_to_mu(CASHMERE_GRAY);
+        muCtx.style->colors[MU_COLOR_BUTTONFOCUS] = color_to_mu(SLATE_BLUE);
+        muCtx.style->colors[MU_COLOR_BASE]        = color_to_mu(CHARCOAL_BG);
+        muCtx.style->colors[MU_COLOR_BASEHOVER]   = color_to_mu(CASHMERE_GRAY);
+        muCtx.style->colors[MU_COLOR_BASEFOCUS]   = color_to_mu(SLATE_BLUE);
+        muCtx.style->colors[MU_COLOR_SCROLLBASE]  = color_to_mu(ESPRESSO_BLACK);
+        muCtx.style->colors[MU_COLOR_SCROLLTHUMB] = color_to_mu(TAUPE_GRAY);
+    }
+    else
+    {
+        muCtx.style->colors[MU_COLOR_TEXT]        = color_to_mu(ESPRESSO_BLACK);
+        muCtx.style->colors[MU_COLOR_BORDER]      = color_to_mu(TAUPE_GRAY);
+        muCtx.style->colors[MU_COLOR_WINDOWBG]    = color_to_mu(WARM_CREAM);
+        muCtx.style->colors[MU_COLOR_TITLEBG]     = color_to_mu(ALABASTER_GRAY);
+        muCtx.style->colors[MU_COLOR_TITLETEXT]   = color_to_mu(ESPRESSO_BLACK);
+        muCtx.style->colors[MU_COLOR_PANELBG]     = color_to_mu(ALABASTER_GRAY);
+        muCtx.style->colors[MU_COLOR_BUTTON]      = color_to_mu(ALABASTER_GRAY);
+        muCtx.style->colors[MU_COLOR_BUTTONHOVER] = color_to_mu(CASHMERE_GRAY);
+        muCtx.style->colors[MU_COLOR_BUTTONFOCUS] = color_to_mu(SLATE_BLUE);
+        muCtx.style->colors[MU_COLOR_BASE]        = color_to_mu(ALABASTER_GRAY);
+        muCtx.style->colors[MU_COLOR_BASEHOVER]   = color_to_mu(CASHMERE_GRAY);
+        muCtx.style->colors[MU_COLOR_BASEFOCUS]   = color_to_mu(SLATE_BLUE);
+        muCtx.style->colors[MU_COLOR_SCROLLBASE]  = color_to_mu(WARM_CREAM);
+        muCtx.style->colors[MU_COLOR_SCROLLTHUMB] = color_to_mu(TAUPE_GRAY);
+    }
 }
 
 void
 init_ui()
 {
-
     /* Init Hagl */
     display = hagl_init();
+    /* Wire up the internal Pointer */
+    muCtx.style = &muCtx._style;
+
     /* Init micro UI */
     mu_init(&muCtx);
+
     /* Wire up the callbacks */
     muCtx.text_width  = get_text_width;
     muCtx.text_height = get_text_height;
     muCtx.draw_frame  = get_draw_frame;
+
+    /* Wire up the styles */
+    muCtx.style->size           = (mu_Vec2) { 68, 18 };
+    muCtx.style->padding        = 5;
+    muCtx.style->spacing        = 4;
+    muCtx.style->indent         = 12;
+    muCtx.style->title_height   = 20;
+    muCtx.style->scrollbar_size = 10;
+
     /* Use the 6x9 hagl inbuilt font */
     muCtx.style->font = (mu_Font)font6x9;
+
+    /* Set dark Mode */
+    apply_theme();
     ESP_LOGI(TAG, "Initialize ILI9341 display and UI");
 }
 
@@ -106,15 +177,12 @@ render_microui()
                                               cmd->text.color.g,
                                               cmd->text.color.b);
                 char        *str = cmd->text.str;
+                int16_t      x   = cmd->text.pos.x;
+                int16_t      y   = cmd->text.pos.y;
                 while (*str)
                 {
-                    hagl_put_char(display,
-                                  *str++,
-                                  cmd->text.pos.x,
-                                  cmd->text.pos.y,
-                                  col,
-                                  font6x9);
-                    cmd->text.pos.x += 6;
+                    wchar_t wch = (wchar_t)(uint8_t)*str++;
+                    x += hagl_put_char(display, wch, x, y, col, font6x9);
                 }
 
                 break;
@@ -126,22 +194,26 @@ render_microui()
                 {
                     break;
                 }
+                /* Populate a hagl_bitmap buffer and use it to blit */
                 hagl_bitmap_t src;
                 src.width  = cmd->icon.rect.w;
                 src.height = cmd->icon.rect.h;
-                src.depth  = 16;
+                src.depth  = display->depth;
+                ;
                 src.pitch  = cmd->icon.rect.w * 2;
                 src.buffer = (uint8_t *)icon_database[id];
+
                 src.blit
                     = (void (*)(void *, int16_t, int16_t, void *))display->blit;
                 src.scale_blit = (void (*)(
                     void *, int16_t, int16_t, uint16_t, uint16_t, void *))
                                      display->scale_blit;
-                src.get_pixel  = display->get_pixel;
-                src.put_pixel  = display->put_pixel;
-                src.color      = display->color;
-                src.hline      = display->hline;
-                src.vline      = display->vline;
+
+                src.get_pixel = display->get_pixel;
+                src.put_pixel = display->put_pixel;
+                src.color     = display->color;
+                src.hline     = display->hline;
+                src.vline     = display->vline;
 
                 src.clip.x0 = 0;
                 src.clip.y0 = 0;

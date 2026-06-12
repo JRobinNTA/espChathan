@@ -19,19 +19,16 @@
 #include <microui.h>
 #include <esp_lcd_touch.h>
 
-#include "lcDsply.h"
+#include "render.h"
 #include "touchScrn.h"
 #include "graphicUI.h"
+#include "globals.h"
 
-extern hagl_backend_t *display;
+ui_states_t globalUIState = IN_MAIN_MENU;
 
-extern esp_lcd_touch_handle_t tp;
+void ui_main_menu(){
 
-extern esp_lcd_panel_io_handle_t tp_io_handle;
-
-extern mu_Context muCtx;
-
-extern SemaphoreHandle_t spi_bus_mutex;
+}
 
 void build_user_interface(){
 
