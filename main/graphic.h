@@ -16,39 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <microui.h>
-#include <esp_lcd_touch.h>
+#ifndef GRAPHIC_H
+#define GRAPHIC_H
 
-#include "render.h"
-#include "touchScrn.h"
-#include "graphicUI.h"
-#include "globals.h"
+void ui_loop(void *pvParameters);
 
-ui_states_t globalUIState = IN_MAIN_MENU;
+void build_user_interface();
 
-void ui_main_menu(){
-
-}
-
-void build_user_interface(){
-
-}
-
-void ui_loop(void *pvParameters)
-{
-    bool last_touch = false;
-    while (1) {
-        touch_read(&last_touch);
-
-        mu_begin(&muCtx);
-        build_user_interface(); 
-        mu_end(&muCtx);
-
-        if (xSemaphoreTake(spi_bus_mutex, portMAX_DELAY) == pdTRUE) {
-            render_microui();
-            xSemaphoreGive(spi_bus_mutex);
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(16)); 
-    }
-}
+#endif /* GRAPHIC_H */

@@ -23,8 +23,8 @@
 
 /* LCD Resolution
  * If edit also update the vals in sdkconfig for the hagl_hal driver */
-#define CONFIG_LCD_HRES 320
-#define CONFIG_LCD_VRES 240
+#define LCD_WIDTH 320
+#define LCD_HEIGHT 240
 
 /* Font used is font6x9 from hagl */
 #define FONT_HEIGHT 9

@@ -25,11 +25,14 @@
 #include <esp_lcd_touch.h>
 #include <esp_log.h>
 #include <hagl/bitmap.h>
+#include <stdint.h>
 
 #include "globals.h"
 #include "config.h"
+#include "hagl/rectangle.h"
 #include "icons.h"
 #include "render.h"
+#include "layout.h"
 
 #define TAG "UI"
 
@@ -54,15 +57,6 @@ int
 get_text_height(mu_Font font)
 {
     return FONT_HEIGHT;
-}
-
-void
-get_draw_frame(mu_Context *ctx, mu_Rect rect, int colorid)
-{
-    mu_Color     c   = ctx->style->colors[colorid];
-    hagl_color_t col = hagl_color(display, c.r, c.g, c.b);
-    hagl_fill_rectangle(
-        display, rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, col);
 }
 
 static mu_Color
@@ -127,7 +121,6 @@ init_ui()
     /* Wire up the callbacks */
     muCtx.text_width  = get_text_width;
     muCtx.text_height = get_text_height;
-    muCtx.draw_frame  = get_draw_frame;
 
     /* Wire up the styles */
     muCtx.style->size           = (mu_Vec2) { 68, 18 };
@@ -170,12 +163,12 @@ render_microui()
                                     col);
                 break;
             }
-
+            /* TODO: Use hagl_put_text */
             case MU_COMMAND_TEXT: {
-                hagl_color_t col = hagl_color(display,
-                                              cmd->text.color.r,
-                                              cmd->text.color.g,
-                                              cmd->text.color.b);
+                hagl_color_t col = display->color(display,
+                                                  cmd->text.color.r,
+                                                  cmd->text.color.g,
+                                                  cmd->text.color.b);
                 char        *str = cmd->text.str;
                 int16_t      x   = cmd->text.pos.x;
                 int16_t      y   = cmd->text.pos.y;
@@ -187,38 +180,42 @@ render_microui()
 
                 break;
             }
-
+            /* Hardcoded for 16x16 icons */
             case MU_COMMAND_ICON: {
                 int id = cmd->icon.id;
-                if (id >= sizeof(icon_database) / sizeof(icon_database[0]))
+                if (id >= ICON_NUMS)
                 {
                     break;
                 }
+                /* All of our icons are packed into uint8_t buffers */
+                static hagl_color_t icon_buffer[ICON_SIZE * 8];
+                const uint8_t      *icon_data = globalIcons[id];
+                hagl_color_t        col = display->color(display,
+                                                         cmd->icon.color.r,
+                                                         cmd->icon.color.g,
+                                                         cmd->icon.color.b);
+
+                /* Create the colored bitmap from alpha only data */
+                for (uint16_t byte_idx = 0; byte_idx < ICON_SIZE; byte_idx++)
+                {
+                    uint8_t data_byte = icon_data[byte_idx];
+                    uint16_t pixel_offset = byte_idx * 8;
+
+                    icon_buffer[pixel_offset + 0] = (data_byte & 0x80) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 1] = (data_byte & 0x40) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 2] = (data_byte & 0x20) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 3] = (data_byte & 0x10) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 4] = (data_byte & 0x08) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 5] = (data_byte & 0x04) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 6] = (data_byte & 0x02) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 7] = (data_byte & 0x01) ? col : 0x0000;
+                }
                 /* Populate a hagl_bitmap buffer and use it to blit */
                 hagl_bitmap_t src;
-                src.width  = cmd->icon.rect.w;
-                src.height = cmd->icon.rect.h;
-                src.depth  = display->depth;
-                ;
-                src.pitch  = cmd->icon.rect.w * 2;
-                src.buffer = (uint8_t *)icon_database[id];
+                uint8_t native_depth = sizeof(hagl_color_t) * 8;
+                hagl_bitmap_init(&src, 16, 16, native_depth, icon_buffer);
 
-                src.blit
-                    = (void (*)(void *, int16_t, int16_t, void *))display->blit;
-                src.scale_blit = (void (*)(
-                    void *, int16_t, int16_t, uint16_t, uint16_t, void *))
-                                     display->scale_blit;
-
-                src.get_pixel = display->get_pixel;
-                src.put_pixel = display->put_pixel;
-                src.color     = display->color;
-                src.hline     = display->hline;
-                src.vline     = display->vline;
-
-                src.clip.x0 = 0;
-                src.clip.y0 = 0;
-                src.clip.x1 = cmd->icon.rect.w - 1;
-                src.clip.y1 = cmd->icon.rect.h - 1;
+                src.color = display->color;
 
                 if (display->blit)
                 {

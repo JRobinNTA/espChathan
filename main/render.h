@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#ifndef RENDER_H
+#define RENDER_H
 
 #include <stdint.h>
 #include <microui.h>
@@ -38,13 +40,6 @@ typedef enum
 } color_t;
 
 
-typedef enum
-{
-    IN_SUB_MENU,
-    FEATURE_RUN,
-    IN_MAIN_MENU,
-    STOP_FEATURE
-} ui_states_t;
 
 typedef enum
 {
@@ -53,7 +48,6 @@ typedef enum
 } theme_state_t;
 
 extern theme_state_t   globalThemeState;
-extern ui_states_t     globalUIState;
 extern mu_Context muCtx;
 
 void apply_theme();
@@ -61,3 +55,5 @@ void apply_theme();
 void init_ui();
 
 void render_microui();
+
+#endif /* RENDER_H */

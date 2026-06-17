@@ -41,8 +41,8 @@ init_touch()
         (esp_lcd_spi_bus_handle_t)SPI2_HOST, &tp_io_config, &tp_io_handle));
 
     esp_lcd_touch_config_t tp_cfg = {
-        .x_max = CONFIG_LCD_HRES,
-        .y_max = CONFIG_LCD_VRES,
+        .x_max = LCD_WIDTH,
+        .y_max = LCD_HEIGHT,
         .rst_gpio_num = -1,
         .int_gpio_num = TOUCH_IRQ_PIN,
         .flags = {

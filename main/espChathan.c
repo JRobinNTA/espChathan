@@ -22,24 +22,16 @@
 #include <freertos/FreeRTOS.h>
 
 #include "render.h"
-#include "touchScrn.h"
-#include "graphicUI.h"
+#include "touch.h"
+#include "graphic.h"
 #include "globals.h"
 
 #define TAG "MAIN"
 
-SemaphoreHandle_t spi_bus_mutex = NULL;
-
 void
 app_main(void)
 {
-    ESP_LOGI(TAG, "Booting system... Initializing FreeRTOS synchronization primitives.");
-
-    spi_bus_mutex = xSemaphoreCreateMutex();
-    if (spi_bus_mutex == NULL) {
-        ESP_LOGE("MAIN", "Critical Error: Failed to create SPI bus mutex!");
-        return;
-    }
+    ESP_LOGI(TAG, "Booting system....");
 
     init_ui();
     init_touch();

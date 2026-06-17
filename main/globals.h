@@ -32,5 +32,3 @@ extern mu_Context muCtx;
 extern hagl_backend_t *display;
 
 extern hagl_bitmap_t *nextIcon;
-
-extern SemaphoreHandle_t spi_bus_mutex;
