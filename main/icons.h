@@ -57,7 +57,8 @@ extern const uint8_t bitmapIR[ICON_SIZE];
 extern const uint8_t bitmapBack[ICON_SIZE];
 
 /* Icon index enumeration */
-typedef enum {
+typedef enum
+{
     ICON_SCAN,
     ICON_ABOUT,
     ICON_RFID,

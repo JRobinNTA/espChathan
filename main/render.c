@@ -58,7 +58,7 @@ get_text_height(mu_Font font)
     return FONT_HEIGHT;
 }
 
-static mu_Color
+mu_Color
 color_to_mu(uint16_t rgb565)
 {
     return (mu_Color) { .r = ((rgb565 >> 11) & 0x1F) << 3,
@@ -197,21 +197,29 @@ render_microui()
                 /* Create the colored bitmap from alpha only data */
                 for (uint16_t byte_idx = 0; byte_idx < ICON_SIZE; byte_idx++)
                 {
-                    uint8_t data_byte = icon_data[byte_idx];
+                    uint8_t  data_byte    = icon_data[byte_idx];
                     uint16_t pixel_offset = byte_idx * 8;
 
-                    icon_buffer[pixel_offset + 0] = (data_byte & 0x80) ? col : 0x0000;
-                    icon_buffer[pixel_offset + 1] = (data_byte & 0x40) ? col : 0x0000;
-                    icon_buffer[pixel_offset + 2] = (data_byte & 0x20) ? col : 0x0000;
-                    icon_buffer[pixel_offset + 3] = (data_byte & 0x10) ? col : 0x0000;
-                    icon_buffer[pixel_offset + 4] = (data_byte & 0x08) ? col : 0x0000;
-                    icon_buffer[pixel_offset + 5] = (data_byte & 0x04) ? col : 0x0000;
-                    icon_buffer[pixel_offset + 6] = (data_byte & 0x02) ? col : 0x0000;
-                    icon_buffer[pixel_offset + 7] = (data_byte & 0x01) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 0]
+                        = (data_byte & 0x80) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 1]
+                        = (data_byte & 0x40) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 2]
+                        = (data_byte & 0x20) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 3]
+                        = (data_byte & 0x10) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 4]
+                        = (data_byte & 0x08) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 5]
+                        = (data_byte & 0x04) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 6]
+                        = (data_byte & 0x02) ? col : 0x0000;
+                    icon_buffer[pixel_offset + 7]
+                        = (data_byte & 0x01) ? col : 0x0000;
                 }
                 /* Populate a hagl_bitmap buffer and use it to blit */
                 hagl_bitmap_t src;
-                uint8_t native_depth = sizeof(hagl_color_t) * 8;
+                uint8_t       native_depth = sizeof(hagl_color_t) * 8;
                 hagl_bitmap_init(&src, 16, 16, native_depth, icon_buffer);
 
                 src.color = display->color;

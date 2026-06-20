@@ -19,6 +19,8 @@
 #ifndef GRAPHIC_H
 #define GRAPHIC_H
 
+#define TITLE_BAR_HEIGHT 48
+
 void ui_loop(void *pvParameters);
 
 void build_user_interface();
@@ -27,6 +29,8 @@ void ui_feature_menu();
 
 void ui_main_menu();
 
-void ui_feature_home();
+void ui_feature_main();
+
+void ui_loading();
 
 #endif /* GRAPHIC_H */

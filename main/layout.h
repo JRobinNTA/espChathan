@@ -58,6 +58,7 @@ typedef enum
     FEATURE_RFID,
     FEATURE_ABOUT,
     FEATURE_SUB_GHZ,
+    FEATURE_MAX_NUM,
 } ui_feature_t;
 
 /* Struct to wrap the full UI state */
@@ -66,6 +67,7 @@ typedef struct
     ui_page_t    page;
     ui_menu_t    menu;
     ui_feature_t feature;
+    bool         change;
 } ui_state_t;
 
 /* Root menu aka main indexes the main menu entries*/
@@ -74,7 +76,7 @@ typedef struct
     char     *label;
     uint8_t   icon_id;
     ui_menu_t id;
-    void (*onEntry)(void);
+    void (*onEntry)(void); /* To update the state */
 } main_menu_entry_t;
 
 /* Feature menu indexes the feature menu entries */
@@ -83,9 +85,9 @@ typedef struct
     char        *label;
     uint8_t      icon_id;
     ui_feature_t id;
-    void (*onEntry)(void);
-    void (*doUpdates)(void);
-    void (*onExit)(void);
+    void (*onEntry)(void);   /* To update the state and startup the backend*/
+    void (*doUpdates)(void); /* Rendering logic for the feature page */
+    void (*onExit)(void);    /* Destructor to cleanup the backend */
 } feature_menu_entry_t;
 
 typedef struct
@@ -95,11 +97,12 @@ typedef struct
 } menu_t;
 
 extern ui_state_t globalUIState;
+extern ui_state_t globalUIStateBuffer;
 
 extern const menu_t mainMenu;
 extern const menu_t featureMenu[];
 
-extern const feature_menu_entry_t globalFeatureMenuEntries[];
+extern const feature_menu_entry_t globalFeatureMenuEntries[FEATURE_MAX_NUM];
 extern const main_menu_entry_t    globalMainMenuEntries[MENU_MAX_NUM];
 
 #endif /* LAYOUT_H */

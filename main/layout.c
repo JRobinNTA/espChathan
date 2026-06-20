@@ -33,23 +33,32 @@
     X(SUB_GHZ)
 
 /* Generate all the inline functions */
-#define X(suffix)                              \
-    static inline void set##suffix##Menu(void) \
-    {                                          \
-        globalUIState.page = PAGE_MENU;        \
-        globalUIState.menu = MENU_##suffix;    \
+#define X(suffix)                                 \
+    static inline void set##suffix##Menu(void)    \
+    {                                             \
+        globalUIStateBuffer.page = PAGE_MENU;     \
+        globalUIStateBuffer.menu = MENU_##suffix; \
+        globalUIState.change     = true;          \
     }
 MENU_SUFFIX_LIST
 
 #undef X
 #undef MENU_SUFFIX_LIST
 
-static inline void
-getBackMain(void)
-{
-    globalUIState.page = PAGE_MENU;
-    globalUIState.menu = MENU_MAIN;
-}
+/* Start from the main page */
+ui_state_t globalUIState = {
+    .page    = PAGE_MENU,
+    .feature = FEATURE_MAIN,
+    .menu    = MENU_MAIN,
+    .change  = false,
+};
+
+ui_state_t globalUIStateBuffer = {
+    .page    = PAGE_MENU,
+    .feature = FEATURE_MAIN,
+    .menu    = MENU_MAIN,
+    .change  = false,
+};
 
 /* global menu entry list */
 const main_menu_entry_t globalMainMenuEntries[MENU_MAX_NUM] = {
@@ -123,7 +132,7 @@ const menu_t mainMenu = {
     .start_idx = 0,
 };
 
-const feature_menu_entry_t globalFeatureMenuEntries[] = {
+const feature_menu_entry_t globalFeatureMenuEntries[FEATURE_MAX_NUM] = {
 
 };
 

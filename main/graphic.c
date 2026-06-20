@@ -24,19 +24,25 @@
 #include "graphic.h"
 #include "config.h"
 #include "layout.h"
+#include "icons.h"
 
-/* Start from the main page */
-ui_state_t globalUIState = {
-    .page    = PAGE_MENU,
-    .feature = FEATURE_MAIN,
-    .menu    = MENU_MAIN,
-};
+void
+ui_feature_main()
+{
+}
+
+void
+ui_loading()
+{
+}
 
 void
 ui_feature_menu()
 {
 
-    mu_Rect screenRect = mu_rect(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    /* Leave the top 48 pixels for status bar and title bar */
+    mu_Rect screenRect
+        = mu_rect(0, 8, LCD_WIDTH, LCD_HEIGHT - TITLE_BAR_HEIGHT);
     /* Disable title close button and resize button */
     int windowFlags = MU_OPT_NOTITLE | MU_OPT_NORESIZE | MU_OPT_NOCLOSE;
 
@@ -72,8 +78,9 @@ ui_feature_menu()
 void
 ui_main_menu()
 {
-
-    mu_Rect screenRect = mu_rect(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    /* Leave the top 48 pixels for status bar and title bar */
+    mu_Rect screenRect = mu_rect(
+        0, TITLE_BAR_HEIGHT, LCD_WIDTH, LCD_HEIGHT - TITLE_BAR_HEIGHT);
     /* Disable title close button and resize button */
     int windowFlags = MU_OPT_NOTITLE | MU_OPT_NORESIZE | MU_OPT_NOCLOSE;
 
@@ -110,55 +117,109 @@ ui_main_menu()
 }
 
 void
+ui_title_bar(void)
+{
+    mu_Rect barRect  = mu_rect(0, 0, LCD_WIDTH, TITLE_BAR_HEIGHT);
+    int     barFlags = MU_OPT_NOTITLE | MU_OPT_NORESIZE | MU_OPT_NOCLOSE;
+    if (mu_begin_window_ex(&muCtx, "ROOT_TITLE_BAR", barRect, barFlags))
+    {
+        mu_layout_row(&muCtx, 2, (int[]) { 36, -1 }, TITLE_BAR_HEIGHT - 10);
+        if (mu_button_ex(&muCtx, " ", ICON_BACK, MU_OPT_ALIGNCENTER))
+        {
+            globalUIState.change = true;
+            if (globalUIState.page == PAGE_FEATURE)
+            {
+                /* buffer state always stores the last menu */
+                globalUIStateBuffer.page = PAGE_MENU;
+            }
+            else if (globalUIState.page == PAGE_MENU
+                     && globalUIState.menu != MENU_MAIN)
+            {
+                globalUIStateBuffer.menu = MENU_MAIN;
+                globalUIStateBuffer.page = PAGE_MENU;
+            }
+            else
+            {
+                globalUIStateBuffer.feature = FEATURE_MAIN;
+                globalUIStateBuffer.page    = PAGE_FEATURE;
+            }
+        }
+
+        const char *titleText = "Main Menu";
+        if (globalUIState.page == PAGE_MENU && globalUIState.menu != MENU_MAIN)
+        {
+            titleText = globalMainMenuEntries[globalUIState.menu].label;
+        }
+        else if (globalUIState.page == PAGE_FEATURE
+                 && globalUIState.feature != FEATURE_MAIN)
+        {
+            titleText = globalFeatureMenuEntries[globalUIState.feature].label;
+        }
+        mu_button_ex(&muCtx, titleText, 0, MU_OPT_ALIGNCENTER | MU_OPT_NOFRAME);
+        mu_Container *barWin = mu_get_current_container(&muCtx);
+        mu_draw_rect(&muCtx,
+                     mu_rect(barWin->body.x,
+                             barWin->body.y + TITLE_BAR_HEIGHT - 1,
+                             barWin->body.w,
+                             1),
+                     color_to_mu(ESPRESSO_BLACK));
+
+        mu_end_window(&muCtx);
+    }
+}
+
+void
 build_user_interface()
 {
-    switch (globalUIState.page)
+    /* The globalUIStateBuffer is updated from the doUpdates renderer itself */
+    while (1)
     {
-        /* If the page is menu */
-        case PAGE_MENU: {
-            /* Draw the menu */
-            if(globalUIState.menu == MENU_MAIN)
-                ui_main_menu();
-            else
-                ui_feature_menu();
-            break;
-        }
-        case PAGE_LOADING: {
-            break;
-        }
-        case PAGE_FEATURE: {
-            switch (globalUIState.feature)
+        if (globalUIState.change)
+        {
+            if (globalUIState.page == PAGE_FEATURE
+                && globalUIState.feature != FEATURE_MAIN)
             {
-                case FEATURE_MAIN: {
-                    break;
+                /* Call the destructors */
+                globalFeatureMenuEntries[globalUIState.feature].onExit();
+            }
+            /* Safely update the UI state */
+            globalUIState.feature = globalUIStateBuffer.feature;
+            globalUIState.menu    = globalUIStateBuffer.menu;
+            globalUIState.page    = globalUIStateBuffer.page;
+            globalUIState.change  = false;
+        }
+        switch (globalUIState.page)
+        {
+            case PAGE_MENU: {
+                ui_title_bar();
+                /* We are currently in main menu */
+                if (globalUIState.menu == MENU_MAIN)
+                {
+                    ui_main_menu();
                 }
-                case FEATURE_WIFI: {
-                    break;
+
+                /* We are currently in a feature menu */
+                else
+                {
+                    ui_feature_menu();
                 }
-                case FEATURE_TOOLS: {
-                    break;
+                break;
+            }
+            case PAGE_LOADING:
+                ui_loading();
+                break;
+            case PAGE_FEATURE: {
+                if (globalUIState.feature == FEATURE_MAIN)
+                {
+                    ui_feature_main();
                 }
-                case FEATURE_SETTINGS: {
-                    break;
+                else
+                {
+
+                    ui_title_bar();
+                    globalFeatureMenuEntries[globalUIState.feature].doUpdates();
                 }
-                case FEATURE_BLE: {
-                    break;
-                }
-                case FEATURE_GPS: {
-                    break;
-                }
-                case FEATURE_IR: {
-                    break;
-                }
-                case FEATURE_RFID: {
-                    break;
-                }
-                case FEATURE_ABOUT: {
-                    break;
-                }
-                case FEATURE_SUB_GHZ: {
-                    break;
-                }
+                break;
             }
         }
     }

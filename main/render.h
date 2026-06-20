@@ -25,22 +25,20 @@
 
 typedef enum
 {
-    MUTED_PLUM       = 0x59AB,
-    WARM_CREAM       = 0xFFBD,
-    SAGE_GREEN       = 0x436A,
-    ALABASTER_GRAY   = 0xE71A,
-    CASHMERE_GRAY    = 0xB574,
-    CHARCOAL_BG      = 0x2945,
-    TERRACOTTA       = 0xDB65,
-    FOREST_GREEN     = 0x3468,
-    ESPRESSO_BLACK   = 0x10A2,
-    MILKY_WHITE      = 0xF79D,
-    TAUPE_GRAY       = 0x7B8D,
-    SLATE_BLUE       = 0x2AB0,
-    BRICK_RED        = 0xC1A5
+    MUTED_PLUM     = 0x59AB,
+    WARM_CREAM     = 0xFFBD,
+    SAGE_GREEN     = 0x436A,
+    ALABASTER_GRAY = 0xE71A,
+    CASHMERE_GRAY  = 0xB574,
+    CHARCOAL_BG    = 0x2945,
+    TERRACOTTA     = 0xDB65,
+    FOREST_GREEN   = 0x3468,
+    ESPRESSO_BLACK = 0x10A2,
+    MILKY_WHITE    = 0xF79D,
+    TAUPE_GRAY     = 0x7B8D,
+    SLATE_BLUE     = 0x2AB0,
+    BRICK_RED      = 0xC1A5
 } color_t;
-
-
 
 typedef enum
 {
@@ -49,7 +47,7 @@ typedef enum
 } theme_state_t;
 
 extern theme_state_t   globalThemeState;
-extern mu_Context muCtx;
+extern mu_Context      muCtx;
 extern hagl_backend_t *display;
 
 void apply_theme();
@@ -57,5 +55,7 @@ void apply_theme();
 void init_ui();
 
 void render_microui();
+
+mu_Color color_to_mu(uint16_t rgb565);
 
 #endif /* RENDER_H */
