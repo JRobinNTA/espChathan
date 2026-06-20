@@ -23,4 +23,10 @@ void ui_loop(void *pvParameters);
 
 void build_user_interface();
 
+void ui_feature_menu();
+
+void ui_main_menu();
+
+void ui_feature_home();
+
 #endif /* GRAPHIC_H */

@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <microui.h>
+#include <hagl.h>
 
 typedef enum
 {
@@ -49,6 +50,7 @@ typedef enum
 
 extern theme_state_t   globalThemeState;
 extern mu_Context muCtx;
+extern hagl_backend_t *display;
 
 void apply_theme();
 

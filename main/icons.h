@@ -53,6 +53,28 @@ extern const uint8_t bitmapSettings[ICON_SIZE];
 /* Generated from bitmapIR.png */
 extern const uint8_t bitmapIR[ICON_SIZE];
 
-#define ICON_NUMS 10
+/* Generated from bitmapBack.png */
+extern const uint8_t bitmapBack[ICON_SIZE];
+
+/* Icon index enumeration */
+typedef enum {
+    ICON_SCAN,
+    ICON_ABOUT,
+    ICON_RFID,
+    ICON_GPS,
+    ICON_TOOLS,
+    ICON_BLE,
+    ICON_WIFI,
+    ICON_SUBGHZ,
+    ICON_SETTINGS,
+    ICON_IR,
+    ICON_BACK,
+    ICON_MAX_NUM
+} icon_t;
+
+/* Global array of all icon bitmaps */
+extern const uint8_t *globalIcons[ICON_MAX_NUM];
+
+#define ICON_NUMS 11
 
 #endif /* ICONS_H */

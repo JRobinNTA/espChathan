@@ -22,7 +22,6 @@
 #include "render.h"
 #include "touch.h"
 #include "graphic.h"
-#include "globals.h"
 #include "config.h"
 #include "layout.h"
 
@@ -34,7 +33,44 @@ ui_state_t globalUIState = {
 };
 
 void
-ui_menu()
+ui_feature_menu()
+{
+
+    mu_Rect screenRect = mu_rect(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    /* Disable title close button and resize button */
+    int windowFlags = MU_OPT_NOTITLE | MU_OPT_NORESIZE | MU_OPT_NOCLOSE;
+
+    if (mu_begin_window_ex(&muCtx,
+                           globalMainMenuEntries[globalUIState.menu].label,
+                           screenRect,
+                           windowFlags))
+    {
+
+        mu_layout_row(&muCtx, 1, (int[]) { -1 }, 30);
+
+        int startIndx = featureMenu[globalUIState.menu].start_idx;
+        int endIndx   = featureMenu[globalUIState.menu].entries + startIndx;
+        for (int i = startIndx; i < endIndx; i++)
+        {
+
+            if (mu_button_ex(&muCtx,
+                             globalFeatureMenuEntries[i].label,
+                             globalFeatureMenuEntries[i].id,
+                             0))
+            {
+                /* Update teh UI state according to the button pressed */
+                if (globalFeatureMenuEntries[i].onEntry != NULL)
+                {
+                    globalFeatureMenuEntries[i].onEntry();
+                }
+            }
+        }
+        mu_end_window(&muCtx);
+    }
+}
+
+void
+ui_main_menu()
 {
 
     mu_Rect screenRect = mu_rect(0, 0, LCD_WIDTH, LCD_HEIGHT);
@@ -44,27 +80,28 @@ ui_menu()
     if (mu_begin_window_ex(&muCtx, "ROOT_MENU", screenRect, windowFlags))
     {
 
-        mu_Container *win      = mu_get_current_container(&muCtx);
-        int           gap      = muCtx.style->spacing;
-        int           sqHeight = (win->body.w - gap) / 2;
+        mu_Container *win         = mu_get_current_container(&muCtx);
+        int           gap         = muCtx.style->spacing;
+        int           sqHeight    = (win->body.w - gap) / 2;
+        int           buttonFlags = 0;
 
         mu_layout_row(&muCtx, 2, (int[]) { -1, -1 }, sqHeight);
-        int startIndx = globalMenus[globalUIState.menu].start_idx;
-        int endIndx   = globalMenus[globalUIState.menu].entries + startIndx;
+        /* Align the icon to button center */
+        buttonFlags   = MU_OPT_ALIGNCENTER;
+        int startIndx = mainMenu.start_idx;
+        int endIndx   = mainMenu.entries + startIndx;
         for (int i = startIndx; i < endIndx; i++)
         {
-            /* Align the icon to button center */
-            int buttonFlags = MU_OPT_ALIGNCENTER;
 
             if (mu_button_ex(&muCtx,
-                             globalEntries[i].label,
-                             globalEntries[i].id,
+                             globalMainMenuEntries[i].label,
+                             globalMainMenuEntries[i].id,
                              buttonFlags))
             {
                 /* Update teh UI state according to the button pressed */
-                if (globalEntries[i].callback != NULL)
+                if (globalMainMenuEntries[i].onEntry != NULL)
                 {
-                    globalEntries[i].callback();
+                    globalMainMenuEntries[i].onEntry();
                 }
             }
         }
@@ -79,15 +116,12 @@ build_user_interface()
     {
         /* If the page is menu */
         case PAGE_MENU: {
-            /* Redundant safety check */
-            if(globalUIState.menu == MENU_NIL){
-                break;
-            }
             /* Draw the menu */
-            else{
-                ui_menu();
-                break;
-            }
+            if(globalUIState.menu == MENU_MAIN)
+                ui_main_menu();
+            else
+                ui_feature_menu();
+            break;
         }
         case PAGE_LOADING: {
             break;
@@ -95,9 +129,6 @@ build_user_interface()
         case PAGE_FEATURE: {
             switch (globalUIState.feature)
             {
-                case FEATURE_NIL: {
-                    break;
-                }
                 case FEATURE_MAIN: {
                     break;
                 }

@@ -24,7 +24,6 @@
 #include "render.h"
 #include "touch.h"
 #include "graphic.h"
-#include "globals.h"
 
 #define TAG "MAIN"
 

@@ -16,7 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#ifndef TOUCH_H
+#define TOUCH_H
+
+#include <esp_lcd_touch_xpt2046.h>
 
 void init_touch();
 
 void touch_read(bool *last_touch_state);
+
+extern esp_lcd_touch_handle_t tp;
+
+extern esp_lcd_panel_io_handle_t tp_io_handle;
+
+#endif /* TOUCH_H */

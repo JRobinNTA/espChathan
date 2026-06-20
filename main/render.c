@@ -27,7 +27,6 @@
 #include <hagl/bitmap.h>
 #include <stdint.h>
 
-#include "globals.h"
 #include "config.h"
 #include "hagl/rectangle.h"
 #include "icons.h"

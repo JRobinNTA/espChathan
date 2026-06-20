@@ -29,12 +29,10 @@ typedef enum
     PAGE_LOADING, /* Current Loaded page is a LOADING Animation */
 } ui_page_t;
 
-/* State var to track the current loaded MENU only relevant if PAGE_MENU is set
- */
+/* Represent the list of menus */
 typedef enum
 {
-    MENU_NIL  = -1,
-    MENU_MAIN = 0,
+    MENU_MAIN = -1, /* Main Menu is the root menu exempt it */
     MENU_WIFI,
     MENU_TOOLS,
     MENU_SETTINGS,
@@ -44,14 +42,13 @@ typedef enum
     MENU_RFID,
     MENU_ABOUT,
     MENU_SUB_GHZ,
+    MENU_MAX_NUM,
 } ui_menu_t;
 
-/* State var to track the current loaded FEATURE only relevant if PAGE_FEATURE
- * is set */
+/* Represent the List of Features */
 typedef enum
 {
-    FEATURE_NIL  = -1,
-    FEATURE_MAIN = 0,
+    FEATURE_MAIN = -1, /* Feature Main is just the home page exempt it */
     FEATURE_WIFI,
     FEATURE_TOOLS,
     FEATURE_SETTINGS,
@@ -71,25 +68,38 @@ typedef struct
     ui_feature_t feature;
 } ui_state_t;
 
-/* A single menu entry */
+/* Root menu aka main indexes the main menu entries*/
 typedef struct
 {
-    char          *label;
-    uint8_t        id;
-    void (*callback)(void);
+    char     *label;
+    uint8_t   icon_id;
+    ui_menu_t id;
+    void (*onEntry)(void);
+} main_menu_entry_t;
 
-} menu_entry_t;
+/* Feature menu indexes the feature menu entries */
+typedef struct
+{
+    char        *label;
+    uint8_t      icon_id;
+    ui_feature_t id;
+    void (*onEntry)(void);
+    void (*doUpdates)(void);
+    void (*onExit)(void);
+} feature_menu_entry_t;
 
-/* Wraps a single menu from the global array of menu entries */
 typedef struct
 {
     const uint8_t start_idx;
     const uint8_t entries;
 } menu_t;
 
-extern const uint8_t     *globalIcons[];
-extern ui_state_t         globalUIState;
-extern const menu_entry_t globalEntries[];
-extern const menu_t       globalMenus[];
+extern ui_state_t globalUIState;
+
+extern const menu_t mainMenu;
+extern const menu_t featureMenu[];
+
+extern const feature_menu_entry_t globalFeatureMenuEntries[];
+extern const main_menu_entry_t    globalMainMenuEntries[MENU_MAX_NUM];
 
 #endif /* LAYOUT_H */

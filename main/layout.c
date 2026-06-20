@@ -18,98 +18,113 @@
  */
 #include "icons.h"
 #include "layout.h"
+#include "graphic.h"
 
-/* global icon list */
-const uint8_t *globalIcons[] = {
-    bitmapWiFi,
-    bitmapTools,
-    bitmapSettings,
-    bitmapBLE,
-    bitmapGPS,
-    bitmapIR,
-    bitmapRFID,
-    bitmapAbout,
-    bitmapSubGHZ,
-};
+/* Generate the Menu entry functions at compile time */
+#define MENU_SUFFIX_LIST \
+    X(WIFI)              \
+    X(TOOLS)             \
+    X(SETTINGS)          \
+    X(BLE)               \
+    X(GPS)               \
+    X(IR)                \
+    X(RFID)              \
+    X(ABOUT)             \
+    X(SUB_GHZ)
 
-void static inline setWiFi(void)
+/* Generate all the inline functions */
+#define X(suffix)                              \
+    static inline void set##suffix##Menu(void) \
+    {                                          \
+        globalUIState.page = PAGE_MENU;        \
+        globalUIState.menu = MENU_##suffix;    \
+    }
+MENU_SUFFIX_LIST
+
+#undef X
+#undef MENU_SUFFIX_LIST
+
+static inline void
+getBackMain(void)
 {
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_WIFI;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setTools()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_TOOLS;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setSettings()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_SETTINGS;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setBLE()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_BLE;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setGPS()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_GPS;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setIR()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_IR;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setRFID()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_BLE;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setAbout()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_GPS;
-    globalUIState.feature = FEATURE_NIL;
-}
-
-void static inline setSubGHZ()
-{
-    globalUIState.page    = PAGE_MENU;
-    globalUIState.menu    = MENU_IR;
-    globalUIState.feature = FEATURE_NIL;
+    globalUIState.page = PAGE_MENU;
+    globalUIState.menu = MENU_MAIN;
 }
 
 /* global menu entry list */
-const menu_entry_t globalEntries[] = {
-    { .label = "WiFi", .id = 0, .callback = setWiFi },
-    { .label = "Tools", .id = 1, .callback = setTools },
-    { .label = "Settings", .id = 2, .callback = setSettings },
-    { .label = "BLE", .id = 3, .callback = setBLE },
-    { .label = "GPS", .id = 4, .callback = setGPS },
-    { .label = "IR", .id = 5, .callback = setIR },
-    { .label = "RFID", .id = 6, .callback = setRFID },
-    { .label = "About", .id = 7, .callback = setAbout },
-    { .label = "Sub GHZ", .id = 8, .callback = setSubGHZ },
+const main_menu_entry_t globalMainMenuEntries[MENU_MAX_NUM] = {
+    {
+        .label   = "WiFi Menu",
+        .icon_id = ICON_WIFI,
+        .id      = MENU_WIFI,
+        .onEntry = setWIFIMenu,
+    },
+
+    {
+        .label   = "Tools",
+        .icon_id = ICON_TOOLS,
+        .id      = MENU_TOOLS,
+        .onEntry = setTOOLSMenu,
+    },
+
+    {
+        .label   = "Settings",
+        .icon_id = ICON_SETTINGS,
+        .id      = MENU_SETTINGS,
+        .onEntry = setSETTINGSMenu,
+    },
+
+    {
+        .label   = "BLE Menu",
+        .icon_id = ICON_BLE,
+        .id      = MENU_BLE,
+        .onEntry = setBLEMenu,
+    },
+
+    {
+        .label   = "GPS Menu",
+        .icon_id = ICON_GPS,
+        .id      = MENU_GPS,
+        .onEntry = setGPSMenu,
+    },
+
+    {
+        .label   = "IR Menu",
+        .icon_id = ICON_IR,
+        .id      = MENU_IR,
+        .onEntry = setIRMenu,
+    },
+
+    {
+        .label   = "RFID Menu",
+        .icon_id = ICON_RFID,
+        .id      = MENU_RFID,
+        .onEntry = setRFIDMenu,
+    },
+
+    {
+        .label   = "About",
+        .icon_id = ICON_ABOUT,
+        .id      = MENU_ABOUT,
+        .onEntry = setABOUTMenu,
+    },
+
+    {
+        .label   = "Sub GHZ Menu",
+        .icon_id = ICON_SUBGHZ,
+        .id      = MENU_SUB_GHZ,
+        .onEntry = setSUB_GHZMenu,
+    },
+
 };
 
-/* Main Menu */
-const menu_t globalMenus[] = {
-    { .start_idx = 0, .entries = 9},
-    { .start_idx = 9, .entries = 2},
+const menu_t mainMenu = {
+    .entries   = MENU_MAX_NUM,
+    .start_idx = 0,
 };
+
+const feature_menu_entry_t globalFeatureMenuEntries[] = {
+
+};
+
+const menu_t featureMenu[] = {};
