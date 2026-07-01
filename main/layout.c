@@ -21,7 +21,7 @@
 #include "graphic.h"
 
 /* Generate the Menu entry functions at compile time */
-#define MENU_SUFFIX_LIST \
+#define MAIN_MENU_SUFFIX_LIST \
     X(WIFI)              \
     X(TOOLS)             \
     X(SETTINGS)          \
@@ -38,12 +38,11 @@
     {                                             \
         globalUIStateBuffer.page = PAGE_MENU;     \
         globalUIStateBuffer.menu = MENU_##suffix; \
-        globalUIState.change     = true;          \
     }
-MENU_SUFFIX_LIST
+MAIN_MENU_SUFFIX_LIST
 
 #undef X
-#undef MENU_SUFFIX_LIST
+#undef MAIN_MENU_SUFFIX_LIST
 
 /* Start from the main page */
 ui_state_t globalUIState = {

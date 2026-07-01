@@ -7,6 +7,7 @@
 [submodule "components/hagl_hal"]
 	path = components/hagl_hal
 	url = git@github.com:JRobinNTA/hagl_esp_mipi.git
+	branch = main
 [submodule "components/touch_xpt2046"]
 	path = components/touch_xpt2046
 	url = git@github.com:atanisoft/esp_lcd_touch_xpt2046

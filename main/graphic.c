@@ -64,10 +64,15 @@ ui_feature_menu()
                              globalFeatureMenuEntries[i].id,
                              0))
             {
-                /* Update teh UI state according to the button pressed */
-                if (globalFeatureMenuEntries[i].onEntry != NULL)
+                /* Ignore repeated button mashes */
+                if (!globalUIState.change)
                 {
-                    globalFeatureMenuEntries[i].onEntry();
+                    globalUIState.change = true;
+                    /* Update teh UI state according to the button pressed */
+                    if (globalFeatureMenuEntries[i].onEntry != NULL)
+                    {
+                        globalFeatureMenuEntries[i].onEntry();
+                    }
                 }
             }
         }
@@ -105,10 +110,15 @@ ui_main_menu()
                              globalMainMenuEntries[i].id,
                              buttonFlags))
             {
-                /* Update teh UI state according to the button pressed */
-                if (globalMainMenuEntries[i].onEntry != NULL)
+                /* Ignore repeated button mashes */
+                if (!globalUIState.change)
                 {
-                    globalMainMenuEntries[i].onEntry();
+                    globalUIState.change = true;
+                    /* Update teh UI state according to the button pressed */
+                    if (globalMainMenuEntries[i].onEntry != NULL)
+                    {
+                        globalMainMenuEntries[i].onEntry();
+                    }
                 }
             }
         }
@@ -126,22 +136,27 @@ ui_title_bar(void)
         mu_layout_row(&muCtx, 2, (int[]) { 36, -1 }, TITLE_BAR_HEIGHT - 10);
         if (mu_button_ex(&muCtx, " ", ICON_BACK, MU_OPT_ALIGNCENTER))
         {
-            globalUIState.change = true;
-            if (globalUIState.page == PAGE_FEATURE)
+            /* Ignore repeated button mashes */
+            if (!globalUIState.change)
             {
-                /* buffer state always stores the last menu */
-                globalUIStateBuffer.page = PAGE_MENU;
-            }
-            else if (globalUIState.page == PAGE_MENU
-                     && globalUIState.menu != MENU_MAIN)
-            {
-                globalUIStateBuffer.menu = MENU_MAIN;
-                globalUIStateBuffer.page = PAGE_MENU;
-            }
-            else
-            {
-                globalUIStateBuffer.feature = FEATURE_MAIN;
-                globalUIStateBuffer.page    = PAGE_FEATURE;
+                globalUIState.change = true;
+                if (globalUIState.page == PAGE_FEATURE)
+                {
+                    /* buffer state always stores the last menu */
+                    globalUIStateBuffer.menu = globalUIState.menu;
+                    globalUIStateBuffer.page = PAGE_MENU;
+                }
+                else if (globalUIState.page == PAGE_MENU
+                         && globalUIState.menu != MENU_MAIN)
+                {
+                    globalUIStateBuffer.menu = MENU_MAIN;
+                    globalUIStateBuffer.page = PAGE_MENU;
+                }
+                else
+                {
+                    globalUIStateBuffer.feature = FEATURE_MAIN;
+                    globalUIStateBuffer.page    = PAGE_FEATURE;
+                }
             }
         }
 
@@ -172,55 +187,53 @@ void
 build_user_interface()
 {
     /* The globalUIStateBuffer is updated from the doUpdates renderer itself */
-    while (1)
+    if (globalUIState.change)
     {
-        if (globalUIState.change)
+        if (globalUIState.page == PAGE_FEATURE
+            && globalUIState.feature != FEATURE_MAIN)
         {
-            if (globalUIState.page == PAGE_FEATURE
-                && globalUIState.feature != FEATURE_MAIN)
-            {
-                /* Call the destructors */
-                globalFeatureMenuEntries[globalUIState.feature].onExit();
-            }
-            /* Safely update the UI state */
-            globalUIState.feature = globalUIStateBuffer.feature;
-            globalUIState.menu    = globalUIStateBuffer.menu;
-            globalUIState.page    = globalUIStateBuffer.page;
-            globalUIState.change  = false;
+            /* Call the destructors */
+            globalFeatureMenuEntries[globalUIState.feature].onExit();
         }
-        switch (globalUIState.page)
-        {
-            case PAGE_MENU: {
+        /* Safely update the UI state */
+        globalUIState.feature = globalUIStateBuffer.feature;
+        globalUIState.menu    = globalUIStateBuffer.menu;
+        globalUIState.page    = globalUIStateBuffer.page;
+        /* Release the guard */
+        globalUIState.change = false;
+    }
+    switch (globalUIState.page)
+    {
+        case PAGE_MENU: {
+            ui_title_bar();
+            /* We are currently in main menu */
+            if (globalUIState.menu == MENU_MAIN)
+            {
+                ui_main_menu();
+            }
+
+            /* We are currently in a feature menu */
+            else
+            {
+                ui_feature_menu();
+            }
+            break;
+        }
+        case PAGE_LOADING:
+            ui_loading();
+            break;
+        case PAGE_FEATURE: {
+            if (globalUIState.feature == FEATURE_MAIN)
+            {
+                ui_feature_main();
+            }
+            else
+            {
+
                 ui_title_bar();
-                /* We are currently in main menu */
-                if (globalUIState.menu == MENU_MAIN)
-                {
-                    ui_main_menu();
-                }
-
-                /* We are currently in a feature menu */
-                else
-                {
-                    ui_feature_menu();
-                }
-                break;
+                globalFeatureMenuEntries[globalUIState.feature].doUpdates();
             }
-            case PAGE_LOADING:
-                ui_loading();
-                break;
-            case PAGE_FEATURE: {
-                if (globalUIState.feature == FEATURE_MAIN)
-                {
-                    ui_feature_main();
-                }
-                else
-                {
-
-                    ui_title_bar();
-                    globalFeatureMenuEntries[globalUIState.feature].doUpdates();
-                }
-                break;
-            }
+            break;
         }
     }
 }

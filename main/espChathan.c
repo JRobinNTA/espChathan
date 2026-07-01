@@ -24,7 +24,7 @@
 #include "render.h"
 #include "touch.h"
 #include "graphic.h"
-
+#include "sdcard.h"
 #define TAG "MAIN"
 
 void
@@ -32,9 +32,9 @@ app_main(void)
 {
     ESP_LOGI(TAG, "Booting system....");
 
+    init_sdcard();
     init_ui();
     init_touch();
-
     xTaskCreatePinnedToCore(
         ui_loop,
         "UI_Task",

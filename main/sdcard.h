@@ -16,29 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef SDCARD_H
+#define SDCARD_H
 
-/* MISO MOSI SCK pins for SPI2 HOST */
-#define SPI2_BUS_MISO 13
-#define SPI2_BUS_MOSI 23
-#define SPI2_BUS_SCK  18
+void init_sdcard(void);
 
-/* Touch Pins for the XPT2046 driver */
-#define TOUCH_CS_PIN  33
-#define TOUCH_IRQ_PIN 36
-
-/* LCD Resolution
- * If edit also update the vals in sdkconfig for the hagl_hal driver */
-#define LCD_WIDTH 320
-#define LCD_HEIGHT 240
-#define LCD_CS_PIN CONFIG_MIPI_DISPLAY_PIN_CS
-
-/* Font used is font6x9 from hagl */
-#define FONT_HEIGHT 9
-#define FONT_WIDTH  6
-
-#define SDCARD_CS_PIN 15
-
-#endif /* CONFIG_H */
+#endif /* TOUCH_H */
