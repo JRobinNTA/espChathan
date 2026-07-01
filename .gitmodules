@@ -11,3 +11,6 @@
 [submodule "components/touch_xpt2046"]
 	path = components/touch_xpt2046
 	url = git@github.com:atanisoft/esp_lcd_touch_xpt2046
+[submodule "libs/nrf24l01"]
+	path = libs/nrf24l01
+	url = git@github.com:libdriver/nrf24l01.git
